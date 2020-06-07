@@ -519,7 +519,6 @@
                 {headers: {'token': cookie.get('java_course_token')}}
             ).then(response=> {
                 if(response.data.code==20000) {
-                    console.log(response.data)
                     _this.accountId=response.data.data.user.accountId
                     axios.get("course/getById/"+_this.$route.params.id).then(response=> {
                         _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
@@ -545,7 +544,6 @@
                 this.markCourseDescription.courseDescription=value
                 const _this=this
                 axios.post("course/saveDescription",this.markCourseDescription).then(response=>{
-                    console.log(response.data)
                     if(response.data.code==20000) {
                         _this.$message({
                             message: '课程描述保存成功',
@@ -568,7 +566,6 @@
                 //调用后端进行验证
                 const _this=this
                 axios.post('main-thread/insert',_this.mainThreadAddForm).then(response=> {
-                    console.log(response.data)
                     if(response.data.code==20000) {
                         _this.$message({
                             message: '主线创建成功',
@@ -630,7 +627,6 @@
             showMainThreadDescription(mainThreadId) {
                 const _this=this
                 axios.get("main-thread/getMainThreadById/"+mainThreadId).then(response=>{
-                    console.log(response.data)
                     let mainThread=response.data.data.mainThread
                     _this.mainThreadName.mainThreadId=mainThread.mainThreadId
                     _this.mainThreadName.mainThreadName=mainThread.mainThreadName
@@ -725,7 +721,6 @@
                 //调用后端进行验证
                 const _this=this;
                 axios.post('subsection/insert',_this.subsectionCreate).then(response=> {
-                    console.log(response.data)
                     if(response.data.code==20000) {
                         _this.$message.success('小节添加成功');
                         _this.subsectionCreateVisible=false;
@@ -844,7 +839,6 @@
             },
             //知识点
             showCreateKnowledge(subsectionId) {
-                console.log(subsectionId);
                 this.knowledgeCreate.subsectionId=subsectionId
                 this.knowledgeCreateVisible=true;
             },
@@ -854,7 +848,6 @@
                 //调用后端进行验证
                 const _this=this
                 axios.post('knowledge/insert',this.knowledgeCreate).then(response=> {
-                    console.log(response.data)
                     if(response.data.code==20000) {
                         _this.$message.success('知识点添加成功');
                         axios.get("main-thread/getContentById/" + _this.mainThreadId).then(response => {
@@ -875,7 +868,6 @@
                 //调用后端进行验证
                 const _this=this
                 axios.post('plan/insert',_this.planAddForm).then( response => {
-                    console.log(response.data.data)
                     if(response.data.code==20000) {
                         _this.$message.success('计划添加成功');
                         _this.planAddFormVisible=false
@@ -990,11 +982,9 @@
 
             },
             confirmAddSubsection(subsectionId){
-                console.log(subsectionId)
                 this.subsectionLinkForm.subsectionId=subsectionId;
                 const _this=this;
                 axios.post('subsection-in-plan/append',this.subsectionLinkForm).then(response=>{
-                    console.log(response.data.data)
                     if(response.data.code==20000) {
                         _this.$message.success('小节关联成功');
                         _this.subsectionLinkFormVisible=false;

@@ -1,8 +1,8 @@
 <template>
     <div>
-        <draggable v-model="dKnowledgeList" :draggable="(draggable&&isOneself&&subsectionId!=null)?'.knowledgeList':''"
-                   @update="resortKnowledgeList(subsectionId)" class="list-group">
-            <el-row v-for="(knowledge,index) in dKnowledgeList"
+<!--        <draggable v-model="dKnowledgeList" :draggable="(draggable&&isOneself&&subsectionId!=null)?'.knowledgeList':''"-->
+<!--                   @update="resortKnowledgeList(subsectionId)" class="list-group">-->
+            <el-row v-for="(knowledge,index) in knowledgeList"
                     :key="knowledge.knowledgeId"
                     class="knowledgeList">
                 <el-col :span="1" style="margin: 5px;text-align: right;height: 100%;line-height:40px">
@@ -11,7 +11,6 @@
                            @click="deleteKnowledge(knowledge.knowledgeId,index)">
                         </i><!--删除知识点-->
                     </el-tooltip>
-
                 </el-col>
                 <el-col :span="22">
                     <div style="margin: 5px;background-color: rgba(21,255,211,0.05);width: 99%">
@@ -21,21 +20,21 @@
                         </div>
                         <!--前后置知识点-->
                         <span style="text-align: center;width: 20%">
-                <el-popover placement="top" title="后置知识点" width="100" trigger="hover">
-                    <div>
-                        <el-button @click="showPostKnowledgeList(knowledge.knowledgeId)">查看</el-button>
-                    </div>
-                    <el-button  circle icon="el-icon-top" slot="reference"></el-button>
-                </el-popover>
-                <el-popover placement="top" title="前置知识点"
-                            width="100" trigger="hover">
-                    <div>
-                        <el-button @click="showPreKnowledgeList(knowledge.knowledgeId)">查看</el-button>
-                        <el-button @click="addPreKnowledge(knowledge.knowledgeId)" v-if="isOneself">添加</el-button>
-                    </div>
-                    <el-button circle icon="el-icon-bottom" slot="reference"></el-button>
-                </el-popover>
-            </span>
+                            <el-popover placement="top" title="后置知识点" width="100" trigger="hover">
+                                <div>
+                                    <el-button @click="showPostKnowledgeList(knowledge.knowledgeId)">查看</el-button>
+                                </div>
+                                <el-button  circle icon="el-icon-top" slot="reference"></el-button>
+                            </el-popover>
+                            <el-popover placement="top" title="前置知识点"
+                                        width="100" trigger="hover">
+                                <div>
+                                    <el-button @click="showPreKnowledgeList(knowledge.knowledgeId)">查看</el-button>
+                                    <el-button @click="addPreKnowledge(knowledge.knowledgeId)" v-if="isOneself">添加</el-button>
+                                </div>
+                                <el-button circle icon="el-icon-bottom" slot="reference"></el-button>
+                            </el-popover>
+                        </span>
                         <!--关联文件-->
                         <div style="float: right">
                             <!--知识点描述-->
@@ -76,7 +75,7 @@
                     </div>
                 </el-col>
             </el-row>
-        </draggable>
+<!--        </draggable>-->
         <div>
             <!--显示后置知识点-->
             <el-dialog title="后置知识点":visible.sync="postKnowledgeListDialogVisible">
@@ -433,6 +432,7 @@
                                 message: '知识点删除成功!'
                             });
                             _this.knowledgeList.splice(index,1)
+                            _this.dKnowledgeList=_this.knowledgeList
                         }else{
                             _this.$message({
                                 type: 'error',
@@ -449,7 +449,6 @@
             },
             //知识点重排序
             resortKnowledgeList(subsectionId) {
-                console.log(this.dKnowledgeList)
                 if(true) {
                     let knowledgeIdList=[];
                     for(let i=0;i<this.dKnowledgeList.length;i++){
@@ -481,7 +480,6 @@
                         type: 'warning'
                     });
                 }
-                console.log(subsectionId)
             },
             //显示后置知识点列表
             showPostKnowledgeList(knowledgeId){
