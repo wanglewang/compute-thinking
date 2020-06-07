@@ -1,5 +1,5 @@
 <template>
-    <div class="login_container">
+    <div class="login_container" style="background-color: aquamarine">
         <div class="login_box">
             <!--头像区域-->
             <div class="avatar_box">
@@ -56,27 +56,20 @@
                 this.$refs.loginFormRef.validate((valid)=>{
                     if(valid) {//表单预验证成功
                         //调用后端进行验证
-                        axios.post('login',_this.loginForm).then(function (response) {
-                            console.log(response.data)
-                            if(response.data==-1) {
-                                return _this.$message.error('登录失败，请检查用户名密码');
+                        axios.post('user/login',_this.loginForm).then(response=> {
+                            if(response.data.code==20000) {
+                                cookie.set('java_course_token', response.data.data.token)
+                                _this.$message.success('登录成功');
+                                _this.$router.push('/');
                             }else {
-                                cookie.set('java_course_token', response.data.data.token, { domain: 'localhost' })
-                                axios.get('getUserInfo',
-                                    {headers: {'token': cookie.get('java_course_token')}}
-                                ).then(function (res) {
-                                    console.log(res.data)
-                                    cookie.set("user_info",res.data.data.userId,{domain:'localhost'})
-                                    _this.$message.success('登录成功');
-                                    _this.$router.push('/home/');
-                                })
+                                return _this.$message.error('登录失败，请检查用户名密码');
                             }
                         });
                     }
                 });
             },
             register() {
-                this.$router.push('/register');
+                this.$router.push('register');
             }
         }
     }
@@ -84,7 +77,7 @@
 
 <style lang="less" scoped>
     .login_container{
-        background-color: #2b4b6b;
+        background-color: #25ffbe;
         height: 100%;
     }
     .login_box {

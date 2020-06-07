@@ -100,15 +100,8 @@
             sendCode () {
                 let email = this.registerForm.email
                 if (this.checkEmail(email)) {
-                    console.log(email)
-                    axios({
-                        method: 'post',
-                        url: '/sendVerificationCode',
-                        data: {
-                            'email': this.registerForm.email
-                        }
-                    }).then(function (res) {
-                        sessionStorage.setItem('checkCode', res.data.data)  // 这里我没用redis做缓存，用的浏览器sessionStorage+md5加密存下来的
+                    axios.get('/user/sendVerificationCode/'+this.registerForm.email).then(response=> {
+
                     })
                     let time = 60
                     this.buttonText = '已发送'
@@ -130,12 +123,13 @@
                     this.$message.error('邮箱格式不正确');
                 }
             },
+            // <!--提交注册-->
             register(){
                 const _this=this
                 this.$refs.registerFormRef.validate(valid=>{
                     if(!valid)
                         return;
-                    axios.post("/register",this.registerForm).then(function (response) {
+                    axios.post("/user/register",this.registerForm).then(function (response) {
                         if(response.data="success") {
                             _this.$message.success("注册成功，请登录");
                             _this.$router.push("/login");
@@ -144,20 +138,6 @@
                         }
                     });
                 });
-            },
-            // <!--提交注册-->
-            submitForm(formName) {
-                axios.post
-                this.$refs[formName].validate(valid => {
-                    if (valid) {
-                        setTimeout(() => {
-                            alert('注册成功')
-                        }, 400);
-                    } else {
-                        console.log("error submit!!");
-                        return false;
-                    }
-                })
             },
             // <!--进入登录页-->
             gotoLogin() {
