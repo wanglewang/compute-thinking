@@ -21,7 +21,7 @@ Vue.use(VueRouter)
       ]
     },
     {path:'/login',name:'登录',component:()=>import('../views/user/Login')},
-    {path:'/register',name:'注册',component:()=>import('../views/user/Register')}
+    {path:'/register',name:'注册',component:()=>import('../views/user/Register')},
 ]
 
 const router = new VueRouter({

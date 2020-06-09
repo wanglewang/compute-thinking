@@ -8,10 +8,10 @@
             <!--登录表单区域-->
             <el-form ref="loginFormRef" :model="loginForm" :rules="loginFormRules" label-width="0px" class="login_form">
                 <el-form-item prop="email">
-                    <el-input v-model="loginForm.email" prefix-icon="el-icon-user"></el-input>
+                    <el-input v-model="loginForm.email"placeholder="请输入邮箱" prefix-icon="el-icon-user"></el-input>
                 </el-form-item>
                 <el-form-item prop="password">
-                    <el-input v-model="loginForm.password" prefix-icon="el-icon-lock" show-password></el-input>
+                    <el-input v-model="loginForm.password" placeholder="请输入密码" prefix-icon="el-icon-lock" show-password></el-input>
                 </el-form-item>
                 <el-form-item class="btns">
                     <el-button type="info">帮助</el-button>
@@ -31,14 +31,17 @@
             return{
                 //登录表单的数据绑定对象
                 loginForm:{
-                    email:'2695482554@qq.com',
-                    password:'98220519'
+                    email:'1478547870@qq.com',
+                    password:'12345678'
+                },
+                loginFormRef:{
+
                 },
                 //表单的验证规则对象
                 loginFormRules:{
                     //验证邮箱
                     email:[
-                        { required: true, message: '请输入用户名', trigger: 'blur' },
+                        { required: true, message: '请输入邮箱', trigger: 'blur' },
                         { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
                     ],
                     //验证密码
@@ -57,12 +60,13 @@
                     if(valid) {//表单预验证成功
                         //调用后端进行验证
                         axios.post('user/login',_this.loginForm).then(response=> {
+                            console.log(response.data)
                             if(response.data.code==20000) {
                                 cookie.set('java_course_token', response.data.data.token)
                                 _this.$message.success('登录成功');
                                 _this.$router.push('/');
                             }else {
-                                return _this.$message.error('登录失败，请检查用户名密码');
+                                return _this.$message.error('登录失败，请检查邮箱和密码');
                             }
                         });
                     }

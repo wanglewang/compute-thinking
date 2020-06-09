@@ -1,16 +1,18 @@
 <template>
     <el-container class="home-container">
         <!--页面主体区域-->
-        <el-tabs :tab-position="tabPosition" style="height: 100%;width: 100%;">
+        <el-tabs :tab-position="tabPosition"
+                 style="height: 100%;width: 100%;"
+                 @tab-click="clickLeftSide">
             <!--课程简介栏-->
             <el-tab-pane label="课程简介" style="height: 100%;width: 100%;">
                 <mavon-editor style="height: 688px;width: 100%"
-                              v-model="courseDetailsDTO.courseDescription"
+                              v-model="courseDTO.courseDescription"
                               :ishljs="true"
                               :scrollStyle="true"
                               :subfield="isOneself"
                               defaultOpen="preview"
-                              :toolbarsFlag="isOneself"
+                              :toolbars="(isOneself)?toolbarsIsOneself:toolbarsNotOneself"
                               :editable="isOneself"
                               @save="saveCourseDescription">
                 </mavon-editor>
@@ -18,11 +20,12 @@
             <!--主线栏-->
             <el-tab-pane label="主线">
                 <el-tabs v-model="mainThreadId" type="card"
-                         closable @tab-remove="deleteMainThread"
-                         addable @tab-add="mainThreadAddFormVisible = true"
+                         :closable="isOneself" :addable="isOneself"
+                         @tab-remove="deleteMainThread"
+                         @tab-add="mainThreadAddFormVisible = true"
                          @tab-click="clickMainThread">
                     <el-tab-pane
-                            v-for="(mainThread) in courseDetailsDTO.mainThreads"
+                            v-for="(mainThread) in mainThreadList"
                             :key="mainThread.mainThreadId"
                             :label="mainThread.mainThreadName" :name="mainThread.mainThreadId+''">
                         <el-row style="margin-left:20px;margin-bottom: 10px">
@@ -66,7 +69,7 @@
                                             <el-col :span="1" class="text-center">
                                                 <el-tooltip content="简介" placement="top" style="margin-top: 5px">
                                                     <el-button icon="el-icon-view" circle
-                                                               @click="showSubsectionDescription(subsectionDTO.subsection.subsectionId+'')">
+                                                               @click="showSubsectionDescription(subsectionDTO.subsection.subsectionId+'',true)">
                                                     </el-button><!--查看简介-->
                                                 </el-tooltip>
                                             </el-col>
@@ -102,15 +105,23 @@
             <!--计划栏-->
             <el-tab-pane label="计划">
                 <el-tabs v-model="planId" type="card"
-                         closable @tab-remove="deletePlan"
-                         addable @tab-add="planAddFormVisible = true"
+                         :closable="isOneself" :addable="isOneself"
+                         @tab-remove="deletePlan"
+                         @tab-add="planAddFormVisible = true"
                          @tab-click="clickPlan">
                     <el-tab-pane
-                            v-for="(plan) in courseDetailsDTO.plans"
+                            v-for="(plan) in planList"
                             :key="plan.planId"
                             :label="plan.planName" :name="plan.planId+''">
+                        <el-row style="margin-left:20px;margin-bottom: 10px">
+                            <el-col :span="1" class="text-center">
+                                <el-tooltip content="简介" placement="top">
+                                    <el-button icon="el-icon-view" circle @click="showPlanDescription(plan.planId)"></el-button><!--查看简介-->
+                                </el-tooltip>
+                            </el-col>
+                        </el-row>
                         <el-collapse v-model="activeNames" @change="getSubsectionDetailsInPlan">
-                            <draggable v-model="planDTO"
+                            <draggable v-model="planDTO" :draggable="isOneself?'.list-group-item':''"
                                        @update="resortSubsectionListInPlan(plan.planId)" class="list-group">
                                 <el-collapse-item v-for="(subsectionDTO,index) in planDTO"
                                                   :key="subsectionDTO.subsection.subsectionId+''"
@@ -118,11 +129,27 @@
                                                   :title="index+1+'  '+subsectionDTO.subsection.subsectionName"
                                                   class="list-group-item">
                                     <el-row >
-                                        <div style="float: right;width: 90%">
-                                            <knowledge-list-node
-                                                    :knowledge-list="subsectionDTO.knowledgeList"
-                                                    :is-oneself="false">
-                                            </knowledge-list-node>
+                                        <div style="margin-bottom: 10px">
+                                            <el-col :span="1" class="text-center">
+                                                <el-tooltip content="删除" placement="top" style="margin-top: 5px" v-if="isOneself">
+                                                    <el-button icon="el-icon-delete" circle
+                                                               @click="deleteSubsectionLink(subsectionDTO.subsection.subsectionId+'')">
+                                                    </el-button><!--删除小节关联-->
+                                                </el-tooltip>
+                                            </el-col>
+                                            <el-col :span="1" class="text-center">
+                                                <el-tooltip content="简介" placement="top" style="margin-top: 5px">
+                                                    <el-button icon="el-icon-view" circle
+                                                               @click="showSubsectionDescription(subsectionDTO.subsection.subsectionId+'',false)">
+                                                    </el-button><!--查看简介-->
+                                                </el-tooltip>
+                                            </el-col>
+                                            <el-col :span="20" class="text-center" style="float: right">
+                                                <knowledge-list-node
+                                                        :knowledge-list="subsectionDTO.knowledgeList"
+                                                        :is-oneself="false">
+                                                </knowledge-list-node>
+                                            </el-col>
                                         </div>
                                     </el-row>
                                 </el-collapse-item>
@@ -136,6 +163,10 @@
                         </el-collapse>
                     </el-tab-pane>
                 </el-tabs>
+            </el-tab-pane>
+            <!--知识星球-->
+            <el-tab-pane label="知识星球" style="height: 100%;width: 100%;">
+                <TDPlayer></TDPlayer>
             </el-tab-pane>
         </el-tabs>
         <!--各种弹窗-->
@@ -162,13 +193,14 @@
                     @saveDescription="savePlanDescription"
                     @invisible="planVisible=false">
             </description-dialog>
-            <!--显示小节描述的弹窗-->
+            <!--显示主线下小节描述的弹窗-->
             <description-dialog
                     title="小节描述"
                     v-if="subsectionVisible"
                     :p-node-name="subsectionName.subsectionName"
                     :p-node-description="subsectionDescription.subsectionDescription"
                     :is-oneself="isOneself"
+                    :editable="subsectionEditable"
                     @rename="renameSubsection"
                     @saveDescription="saveSubsectionDescription"
                     @invisible="subsectionVisible=false">
@@ -244,13 +276,15 @@
     import draggable from "vuedraggable";
     import DescriptionAddDialog from "../../components/dialog/DescriptionAddDialog";
     import KnowledgeListNode from "../../components/node/KnowledgeListNode";
+    import TDPlayer from "../../components/three/TDPlayer";
     export default {
         name: "CourseDetails.vue",
         components: {
             KnowledgeListNode,
             DescriptionAddDialog,
             draggable,
-            DescriptionDialog
+            DescriptionDialog,
+            TDPlayer
         },
         computed:{
             mainThreadDTOAfterSearch() {
@@ -312,6 +346,47 @@
         },
         data() {
             return {
+                toolbarsIsOneself:{
+                    bold: true, // 粗体
+                    italic: true, // 斜体
+                    header: true, // 标题
+                    underline: true, // 下划线
+                    strikethrough: true, // 中划线
+                    mark: true, // 标记
+                    superscript: true, // 上角标
+                    subscript: true, // 下角标
+                    quote: true, // 引用
+                    ol: true, // 有序列表
+                    ul: true, // 无序列表
+                    link: true, // 链接
+                    imagelink: true, // 图片链接
+                    code: true, // code
+                    table: true, // 表格
+                    fullscreen: true, // 全屏编辑
+                    readmodel: true, // 沉浸式阅读
+                    htmlcode: true, // 展示html源码
+                    help: true, // 帮助
+                    /* 1.3.5 */
+                    undo: true, // 上一步
+                    redo: true, // 下一步
+                    trash: true, // 清空
+                    save: true, // 保存（触发events中的save事件）
+                    /* 1.4.2 */
+                    navigation: true, // 导航目录
+                    /* 2.1.8 */
+                    alignleft: true, // 左对齐
+                    aligncenter: true, // 居中
+                    alignright: true, // 右对齐
+                    /* 2.2.1 */
+                    subfield: true, // 单双栏模式
+                    preview: true, // 预览
+                },
+                toolbarsNotOneself:{
+                    fullscreen: true, // 全屏编辑
+                    readmodel: true, // 沉浸式阅读
+                    navigation: true, // 导航目录
+                },
+                subsectionEditable:true,
                 searchField:'',
                 options: [{
                     value: 'subsection',
@@ -384,16 +459,16 @@
                 search:'',
                 accountId: '',
                 isOneself:false,
-                courseDetailsDTO: {
+                courseDTO: {
                     courseId:0,
                     courseName:'',
                     courseCover:'',
                     courseDescription:'',
                     accountId:0,
                     teacher:'',
-                    mainThreads:[],
-                    plans:[]
                 },
+                mainThreadList:[],
+                planList:[],
                 markCourseDescription: {
                     courseId:'',
                     courseDescription:''
@@ -513,31 +588,44 @@
             }
         },
         created(){
-            const _this = this;
-            let token=cookie.get('java_course_token');
-            axios.get('user/getRole',
-                {headers: {'token': cookie.get('java_course_token')}}
-            ).then(response=> {
-                if(response.data.code==20000) {
-                    _this.accountId=response.data.data.user.accountId
-                    axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                        _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
-                        _this.isOneself=(_this.courseDetailsDTO.teacher.accountId==_this.accountId)
-                    });
-                }else {
-                    this.$confirm('尚未登录, 是否去登录?', '提示', {
-                        confirmButtonText: '确定',
-                        cancelButtonText: '取消',
-                        type: 'warning'
-                    }).then(() => {
-                        _this.$router.push("/login");
-                    }).catch(() => {
-                    });
-                }
-
-            })
+            const _this=this
+            axios.get("course/getById/"+this.$route.params.id).then(response=> {
+                _this.courseDTO=response.data.data.courseDTO;
+            });
         },
         methods: {
+            //点击侧边栏
+            clickLeftSide(tab) {
+                const _this = this;
+                let token=cookie.get('java_course_token');
+                axios.get('user/getRole',
+                    {headers: {'token': cookie.get('java_course_token')}}
+                ).then(response=> {
+                    if(response.data.code==20000) {
+                        _this.accountId=response.data.data.user.accountId
+                        _this.isOneself=(_this.courseDTO.teacher.accountId==_this.accountId)
+                        if(tab.index==1) {//获取课程下所有主线
+                            axios.get("main-thread/getByCourseId/"+_this.$route.params.id).then(response=> {
+                                _this.mainThreadList=response.data.data.mainThreadList;
+                            });
+                        }else if(tab.index==2) {//获取课程下所有计划
+                            axios.get("plan/getByCourseId/"+_this.$route.params.id).then(response=> {
+                                _this.planList=response.data.data.planList;
+                            });
+                        }
+                    }else {
+                        this.$confirm('尚未登录, 是否去登录?', '提示', {
+                            confirmButtonText: '确定',
+                            cancelButtonText: '取消',
+                            type: 'warning'
+                        }).then(() => {
+                            _this.$router.push("/login");
+                        }).catch(() => {
+                        });
+                    }
+
+                })
+            },
             //课程描述
             saveCourseDescription(value,render) {
                 this.markCourseDescription.courseId=this.$route.params.id
@@ -574,10 +662,10 @@
                         });
                         _this.mainThreadAddFormVisible=false;
                         /**
-                         * 重新加载课程资源
+                         * 重新加载主线资源
                          */
-                        axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                            _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
+                        axios.get("main-thread/getByCourseId/"+_this.$route.params.id).then(response=> {
+                            _this.mainThreadList=response.data.data.mainThreadList;
                         });
                     }else {
                         return _this.$message.error(response.data.message);
@@ -592,7 +680,8 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete("main-thread/delete/"+mainThreadId).then(response=>{
-                        if(response.data.code=20000) {
+                        console.log(response.data)
+                        if(response.data.code==20000) {
                             _this.$message({
                                 type: 'success',
                                 message: '主线删除成功!'
@@ -603,9 +692,8 @@
                                 message: response.data.message
                             });
                         }
-                        axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                            _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
-                            _this.isOneself=(_this.courseDetailsDTO.teacher.accountId==_this.accountId)
+                        axios.get("main-thread/getByCourseId/"+_this.$route.params.id).then(response=> {
+                            _this.mainThreadList=response.data.data.mainThreadList;
                         });
                     })
                 }).catch(() => {
@@ -617,9 +705,9 @@
             },
             clickMainThread(tab, event) {
                 const _this=this
-                let mainThreadId=this.courseDetailsDTO.mainThreads[tab.index].mainThreadId
+                let mainThreadId=this.mainThreadList[tab.index].mainThreadId
                 axios.get("main-thread/getContentById/" + mainThreadId).then(response => {
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.mainThreadDTO=response.data.data.mainThreadDTO
                     }
                 });
@@ -640,14 +728,14 @@
                 const _this=this
                 this.mainThreadName.mainThreadName=mainThreadName
                 axios.post("main-thread/rename",this.mainThreadName).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '主线重命名成功',
                             type: 'success',
                             center:true
                         });
-                        axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                            _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
+                        axios.get("main-thread/getByCourseId/"+_this.$route.params.id).then(response=> {
+                            _this.mainThreadList=response.data.data.mainThreadList;
                         });
                     }else {
                         _this.$message({
@@ -662,7 +750,7 @@
                 const _this=this
                 this.mainThreadDescription.mainThreadDescription=mainThreadDescription
                 axios.post("main-thread/saveDescription",this.mainThreadDescription).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '主线描述保存成功',
                             type: 'success',
@@ -689,7 +777,7 @@
                     let subsectionInMainThread={mainThreadId:mainThreadId,subsectionList:subsectionList};
                     const _this=this
                     axios.post("subsection-in-mainthread/update",subsectionInMainThread).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 message: '小节顺序调整成功',
                                 type: 'success',
@@ -741,13 +829,13 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete("subsection/delete/"+subsectionId).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 type: 'success',
                                 message: '小节删除成功!'
                             });
-                            axios.get("main-thread/getContentById/" + this.mainThreadName.mainThreadId).then(response => {
-                                if(response.data.code=20000) {
+                            axios.get("main-thread/getContentById/" + _this.mainThreadId).then(response => {
+                                if(response.data.code==20000) {
                                     _this.mainThreadDTO=response.data.data.mainThreadDTO
                                 }
                             });
@@ -766,13 +854,14 @@
                 });
             },
             //查看小节描述
-            showSubsectionDescription(subsectionId) {
+            showSubsectionDescription(subsectionId,editable) {
                 this.subsectionName.subsectionId=subsectionId
                 this.subsectionDescription.subsectionId=subsectionId
                 const _this=this
                 axios.get("subsection/getSubsectionById/"+subsectionId).then(response=>{
                     _this.subsectionName.subsectionName=response.data.data.subsection.subsectionName
                     _this.subsectionDescription.subsectionDescription=response.data.data.subsection.subsectionDescription
+                    _this.subsectionEditable=editable
                     _this.subsectionVisible=true
                 })
             },
@@ -780,14 +869,14 @@
                 const _this=this
                 this.subsectionName.subsectionName=subsectionName
                 axios.post("subsection/rename",this.subsectionName).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '小节重命名成功',
                             type: 'success',
                             center:true
                         });
                         axios.get("main-thread/getContentById/" + _this.mainThreadId).then(response => {
-                            if(response.data.code=20000) {
+                            if(response.data.code==20000) {
                                 _this.mainThreadDTO=response.data.data.mainThreadDTO
                             }
                         });
@@ -804,7 +893,7 @@
                 const _this=this
                 this.subsectionDescription.subsectionDescription=subsectionDescription
                 axios.post("subsection/saveDescription",this.subsectionDescription).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '小节描述保存成功',
                             type: 'success',
@@ -827,7 +916,7 @@
                     const _this=this;
                     let subsectionId=params[1]
                     axios.get("knowledge/getBySubsectionId/"+subsectionId).then(response=> {
-                        if(response.data.code=20000){
+                        if(response.data.code==20000) {
                             _this.mainThreadDTO[index].knowledgeList=response.data.data.knowledgeDetailsDTOList;
                         }else {
                             _this.$message.error(response.data.message)
@@ -851,7 +940,7 @@
                     if(response.data.code==20000) {
                         _this.$message.success('知识点添加成功');
                         axios.get("main-thread/getContentById/" + _this.mainThreadId).then(response => {
-                            if(response.data.code=20000) {
+                            if(response.data.code==20000) {
                                 _this.mainThreadDTO=response.data.data.mainThreadDTO
                             }
                             _this.knowledgeCreateVisible=false
@@ -872,10 +961,10 @@
                         _this.$message.success('计划添加成功');
                         _this.planAddFormVisible=false
                         /**
-                         * 重新加载课程资源
+                         * 重新加载计划资源
                          */
-                        axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                            _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
+                        axios.get("plan/getByCourseId/"+_this.$route.params.id).then(response=> {
+                            _this.planList=response.data.data.planList;
                         });
                     }else {
                         return _this.$message.error('计划添加失败，请重新检查一遍');
@@ -890,7 +979,7 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete("plan/delete/"+planId).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 type: 'success',
                                 message: '计划删除成功!'
@@ -901,9 +990,8 @@
                                 message: response.data.message
                             });
                         }
-                        axios.get("course/getById/"+_this.$route.params.id).then(response=> {
-                            _this.courseDetailsDTO=response.data.data.courseDetailsDTO;
-                            _this.isOneself=(_this.courseDetailsDTO.teacher.accountId==_this.accountId)
+                        axios.get("plan/getByCourseId/"+_this.$route.params.id).then(response=> {
+                            _this.planList=response.data.data.planList;
                         });
                     })
                 }).catch(() => {
@@ -915,26 +1003,62 @@
             },
             clickPlan(tab, event){
                 const _this=this;
-                let planId=this.courseDetailsDTO.plans[tab.index].planId
+                let planId=this.planList[tab.index].planId
+                axios.get("plan/getContentById/" + planId).then(response => {
+                    if(response.data.code==20000) {
+                        _this.planDTO=response.data.data.planDTO
+                    }
+                });
+            },
+            deleteSubsectionLink(subsectionId) {
+                const _this=this
+                this.$confirm('此操作将删除该小节关联，但是不会其他东西, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    axios.delete("subsection-in-plan/remove/"+_this.planId+"/"+subsectionId).then(response=>{
+                        if(response.data.code==20000) {
+                            _this.$message({
+                                type: 'success',
+                                message: '小节关联删除成功!'
+                            });
+                            axios.get("plan/getContentById/" + _this.planId).then(response => {
+                                if(response.data.code==20000) {
+                                    _this.planDTO=response.data.data.planDTO
+                                }
+                            });
+                        }else{
+                            _this.$message({
+                                type: 'error',
+                                message: response.data.message
+                            });
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });
+                });
+            },
+            showPlanDescription(planId) {
+                const _this=this
                 axios.get("plan/getPlanById/"+planId).then(response=>{
                     let plan=response.data.data.plan
                     _this.planName.planId=plan.planId
                     _this.planName.planName=plan.planName
-                    _this.planDescription.planId=plan.planId
-                    _this.planDescription.planDescription=plan.planDescription
+                    _this.planDescription.mainThreadId=plan.planId
+                    _this.planDescription.planDescription=plan.mainThreadDescription
                     _this.planVisible=true
                 })
-                axios.get("plan/getContentById/" + tab.$options._parentVnode.key).then(response => {
-                    if(response.data.code=20000) {
-                        _this.planDTO=response.data.data.planDTO
-                    }
-                });
+
             },
             renamePlan(planName){
                 const _this=this
                 this.planName.planName=planName
                 axios.post("plan/rename",this.planName).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '计划重命名成功',
                             type: 'success',
@@ -953,7 +1077,7 @@
                 const _this=this
                 this.planDescription.planDescription=planDescription
                 axios.post("plan/saveDescription",this.planDescription).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '计划描述保存成功',
                             type: 'success',
@@ -1020,7 +1144,7 @@
                 let subsectionInPlan={planId:planId,subsectionList:subsectionList};
                 const _this=this
                 axios.post("subsection-in-plan/update",subsectionInPlan).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '小节顺序调整成功',
                             type: 'success',

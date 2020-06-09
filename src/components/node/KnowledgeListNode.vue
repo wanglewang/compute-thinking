@@ -426,7 +426,7 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete("knowledge/delete/"+knowledgeId).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 type: 'success',
                                 message: '知识点删除成功!'
@@ -459,7 +459,7 @@
                     let knowledgeInSubsection={subsectionId:subsectionId,knowledgeList:knowledgeList};
                     const _this=this
                     axios.post("knowledge-in-subsection/update",knowledgeInSubsection).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 message: '知识点顺序调整成功',
                                 type: 'success',
@@ -540,7 +540,7 @@
                 const _this=this
                 this.knowledgeName.knowledgeName=knowledgeName
                 axios.post("knowledge/rename",this.knowledgeName).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '知识点重命名成功',
                             type: 'success',
@@ -560,7 +560,7 @@
                 const _this=this
                 this.knowledgeDescription.knowledgeDescription=knowledgeDescription
                 axios.post("knowledge/saveDescription",this.knowledgeDescription).then(response=>{
-                    if(response.data.code=20000) {
+                    if(response.data.code==20000) {
                         _this.$message({
                             message: '知识点描述保存成功',
                             type: 'success',
@@ -677,7 +677,7 @@
                         _this.relatedVideo.cloudVideoId=response.data.data.relatedVideo.cloudVideoId
                         axios.get("video/getPlayAuth/"+_this.relatedVideo.cloudVideoId).then(response=> {
                             if(response.data.code==20000) {
-                                _this.relatedVideo.playAuth=response.data.data.playAuth
+                                _this.relatedVideo.videoPlayAuth=response.data.data.playAuth
                                 _this.relatedVideoDialogVisible=true
                             }else {
                                 _this.$message({

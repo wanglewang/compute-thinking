@@ -7,8 +7,11 @@
             </div>
             <!--注册表单区域-->
             <el-form ref="registerFormRef" :model="registerForm" :rules="registerFormRules" label-width="0px" class="register_form">
+                <el-form-item prop="nickname">
+                    <el-input v-model="registerForm.nickname"auto-complete="off" placeholder="请输入昵称" prefix-icon="el-icon-user"></el-input>
+                </el-form-item>
                 <el-form-item prop="email">
-                    <el-input v-model="registerForm.email"auto-complete="off" placeholder="请输入邮箱" prefix-icon="el-icon-user"></el-input>
+                    <el-input v-model="registerForm.email"auto-complete="off" placeholder="请输入邮箱" prefix-icon="el-icon-message"></el-input>
                 </el-form-item>
                 <el-form-item prop="verificationCode" class="code">
                     <div >
@@ -79,10 +82,14 @@
             };
             return {
                 registerForm: {
+                    nickname:'',
                     email: "",
                     verificationCode: "",
                     pwd: "",
                     rePwd: ""
+                },
+                registerFormRef:{
+
                 },
                 registerFormRules: {
                     email: [{ validator: checkEmail, trigger: 'change' }],
@@ -99,11 +106,16 @@
             // <!--发送验证码-->
             sendCode () {
                 let email = this.registerForm.email
+                const _this=this
                 if (this.checkEmail(email)) {
-                    axios.get('/user/sendVerificationCode/'+this.registerForm.email).then(response=> {
-
+                    axios.get('/user/sendVerificationCode/'+email).then(response=> {
+                        if(response.data.code==20000) {
+                            _this.$message.success("邮件发送成功");
+                        }else {
+                            _this.$message.error("服务器出现问题，请联系客服或等待修复");
+                        }
                     })
-                    let time = 60
+                    let time = 2
                     this.buttonText = '已发送'
                     this.isDisabled = true
                     if (this.flag) {
@@ -129,12 +141,14 @@
                 this.$refs.registerFormRef.validate(valid=>{
                     if(!valid)
                         return;
-                    axios.post("/user/register",this.registerForm).then(function (response) {
-                        if(response.data="success") {
+                    axios.post("/user/register",this.registerForm).then(response=> {
+                        console.log(11111)
+                        console.log(response.data)
+                        if(response.data.code==20000) {
                             _this.$message.success("注册成功，请登录");
                             _this.$router.push("/login");
                         }else {
-                            _this.$message.error("注册失败，可能是服务器故障，请稍后再来");
+                            _this.$message.error(response.data.message);
                         }
                     });
                 });
@@ -165,7 +179,7 @@
     }
     .register_box {
         width: 450px;
-        height: 500px;
+        height: 556px;
         background-color: #fff;
         border-radius: 3px;
         position: absolute;

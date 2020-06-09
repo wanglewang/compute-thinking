@@ -14,6 +14,8 @@ Vue.use(mavonEditor)
 import draggable from 'vuedraggable'
 Vue.use(draggable)
 
+import './assets/js/dialog'
+
 axios.defaults.baseURL='http://101.200.53.247:8866/compute_thinking'//配置请求的根路径
 // axios.defaults.baseURL='http://localhost:8866/compute_thinking'//配置请求的根路径
 

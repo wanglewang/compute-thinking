@@ -60,7 +60,7 @@
                 }).then(({ value }) => {
                     this.courseName.courseName=value
                     axios.post("course/rename",this.courseName).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             this.$message({
                                 type: 'success',
                                 message: '你成功将课程名修改为: ' + value
@@ -91,7 +91,7 @@
                     type: 'warning'
                 }).then(() => {
                     axios.delete("course/delete/"+row.courseId).then(response=>{
-                        if(response.data.code=20000) {
+                        if(response.data.code==20000) {
                             _this.$message({
                                 type: 'success',
                                 message: '课程删除成功!'
