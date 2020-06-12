@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="margin-left: 370px">
         <div id="container"></div>
     </div>
 </template>
@@ -8,7 +8,7 @@
     import * as Three from 'three'
 
     export default {
-        name: 'TDPlayer',
+        name: 'CubeStar',
         data () {
             return {
                 camera: null,
@@ -20,19 +20,33 @@
         methods: {
             init: function () {
                 let container = document.getElementById('container')
+                /**
+                 *  创建场景对象
+                 */
+                this.scene = new Three.Scene()
+                /**
+                 * 创建网格模型
+                 */
+                let geometry = new Three.BoxGeometry(0.2, 0.2, 0.2)//创建一个立方体几何对象
+                let material = new Three.MeshNormalMaterial()//创建材质对象
+                this.mesh = new Three.Mesh(geometry, material)//网格模型对象
+                this.scene.add(this.mesh)//将网格模型添加到场景中
+                /**
+                 * 设置相机
+                 */
                 this.camera = new Three.PerspectiveCamera(70, container.clientWidth / container.clientHeight, 0.01, 10)
                 this.camera.position.z = 0.6
-                this.scene = new Three.Scene()
-                let geometry = new Three.BoxGeometry(0.2, 0.2, 0.2)
-                let material = new Three.MeshNormalMaterial()
-                this.mesh = new Three.Mesh(geometry, material)
-                this.scene.add(this.mesh)
-
+                /**
+                 * 设置渲染器
+                 */
                 this.renderer = new Three.WebGLRenderer({antialias: true})
                 this.renderer.setSize(container.clientWidth, container.clientHeight)
                 container.appendChild(this.renderer.domElement)
             },
             animate: function () {
+                /**
+                 * 递归渲染
+                 */
                 requestAnimationFrame(this.animate)
                 this.mesh.rotation.x += 0.01
                 this.mesh.rotation.y += 0.02
@@ -48,6 +62,6 @@
 <style scoped>
     #container {
         width: 800px;
-        height: 600px;
+        height: 688px;
     }
 </style>

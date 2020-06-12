@@ -12,8 +12,8 @@
                 <el-button type="danger" circle icon="el-icon-close" @click="setVisible"></el-button>
             </div>
         </div>
-        <div>
-            <mavon-editor style="height: 480px;width: 100%"
+        <div style="height: 404px;width: 100%">
+            <mavon-editor style="height: 100%;width: 100%"
                           v-model="dNodeDescription"
                           :ishljs="true"
                           :scrollStyle="true"

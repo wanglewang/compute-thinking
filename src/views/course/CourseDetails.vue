@@ -6,16 +6,18 @@
                  @tab-click="clickLeftSide">
             <!--课程简介栏-->
             <el-tab-pane label="课程简介" style="height: 100%;width: 100%;">
-                <mavon-editor style="height: 688px;width: 100%"
-                              v-model="courseDTO.courseDescription"
-                              :ishljs="true"
-                              :scrollStyle="true"
-                              :subfield="isOneself"
-                              defaultOpen="preview"
-                              :toolbars="(isOneself)?toolbarsIsOneself:toolbarsNotOneself"
-                              :editable="isOneself"
-                              @save="saveCourseDescription">
-                </mavon-editor>
+                <div style="height: 688px">
+                    <mavon-editor style="height:100%;width: 100%"
+                                  v-model="courseDTO.courseDescription"
+                                  :ishljs="true"
+                                  :scrollStyle="true"
+                                  :subfield="isOneself"
+                                  defaultOpen="preview"
+                                  :toolbars="(isOneself)?toolbarsIsOneself:toolbarsNotOneself"
+                                  :editable="isOneself"
+                                  @save="saveCourseDescription">
+                    </mavon-editor>
+                </div>
             </el-tab-pane>
             <!--主线栏-->
             <el-tab-pane label="主线">
@@ -164,10 +166,6 @@
                     </el-tab-pane>
                 </el-tabs>
             </el-tab-pane>
-            <!--知识星球-->
-            <el-tab-pane label="知识星球" style="height: 100%;width: 100%;">
-                <TDPlayer></TDPlayer>
-            </el-tab-pane>
         </el-tabs>
         <!--各种弹窗-->
         <div>
@@ -276,15 +274,15 @@
     import draggable from "vuedraggable";
     import DescriptionAddDialog from "../../components/dialog/DescriptionAddDialog";
     import KnowledgeListNode from "../../components/node/KnowledgeListNode";
-    import TDPlayer from "../../components/three/TDPlayer";
+    import HeartStar from "../../components/three/HeartStar";
     export default {
         name: "CourseDetails.vue",
         components: {
+            HeartStar,
             KnowledgeListNode,
             DescriptionAddDialog,
             draggable,
             DescriptionDialog,
-            TDPlayer
         },
         computed:{
             mainThreadDTOAfterSearch() {
@@ -1165,6 +1163,7 @@
 
 <style scoped>
     .home-container{
+        width: 1522px;
         height: 100%;
     }
 </style>

@@ -1,16 +1,17 @@
 <template>
-    <div style="width: 1144px">
-        <el-row>
-            <el-col :span="5" v-for="(course, index) in courses" :key="index" :offset="1">
-                <el-card :body-style="{ padding: '10px',verticalAlign : 'middle',
+    <div style="width: 1522px">
+        <div style="width: 1144px">
+            <el-row style="background-color: rgba(26,230,189,0.15)">
+                <el-col :span="5" v-for="(course, index) in courses" :key="index" :offset="1">
+                    <el-card :body-style="{ padding: '10px',verticalAlign : 'middle',
                                     display: 'table-cell',textAlign: 'center'}" >
-                    <router-link :to="'/course/'+course.courseId">
-                        <div>
-                            <img :src="course.courseCover" class="image" style="width:100%;height:auto;">
-                        </div>
-                    </router-link>
-                    <div style="padding: 14px;">
                         <router-link :to="'/course/'+course.courseId">
+                            <div>
+                                <img :src="course.courseCover" class="image" style="width:100%;height:auto;">
+                            </div>
+                        </router-link>
+                        <div style="padding: 14px;">
+                            <router-link :to="'/course/'+course.courseId">
                             <span class="courseName"
                                   style="display: block;
                                          line-height: 20px;
@@ -19,33 +20,37 @@
                                          overflow: hidden;">
                                 {{course.courseName}}
                             </span>
-                        </router-link>
-                        <div>{{course.teacher.nickname}}</div>
-                        <div class="bottom clearfix">
-                            <div style="font-size: 12px;
+                            </router-link>
+                            <div>{{course.teacher.nickname}}</div>
+                            <div class="bottom clearfix">
+                                <div style="font-size: 12px;
                                         overflow: hidden;
                                         overflow-x: hidden;
                                         overflow-y: hidden;
                                         text-overflow: ellipsis;"
-                            >
-                                {{course.gmtCreate.replace('T',' ')}}
+                                >
+                                    {{course.gmtCreate.replace('T',' ')}}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </el-card>
-            </el-col>
-        </el-row>
-        <div class="block" v-if="total>8">
-            <el-pagination
-                    @size-change="changeSize"
-                    @current-change="changeCurrentPage"
-                    :current-page="currentPage"
-                    :page-sizes="[8, 12, 16, 20,24]"
-                    :page-size="8"
-                    layout="total, sizes, prev, pager, next, jumper"
-                    :total="total">
-            </el-pagination>
+                    </el-card>
+                </el-col>
+            </el-row>
+            <el-row v-if="total>8" style="text-align: center;background-color: rgba(255,227,176,0.24)">
+                <el-pagination
+                        @size-change="changeSize"
+                        @current-change="changeCurrentPage"
+                        :current-page="currentPage"
+                        :page-sizes="[8, 12, 16, 20,24]"
+                        :page-size="8"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="total">
+                </el-pagination>
+            </el-row>
         </div>
+        <el-row style="text-align: center;margin-top: 10px">
+            备案
+        </el-row>
     </div>
 </template>
 
@@ -149,9 +154,5 @@
         transition: .3s;
         height: 250px;
         margin: 20px;
-    }
-    .el-row{
-        background-color: #1AE6BD;
-        height:656px
     }
 </style>
